@@ -13,7 +13,6 @@ protocol WeatherDelegate {
 }
 
 extension WeatherDelegate {
-    
     func parseJson(_ data:Data) -> NSDictionary? {
         do {
             let json = try JSONSerialization.jsonObject(with: data, options: .allowFragments) as! NSDictionary
@@ -22,9 +21,8 @@ extension WeatherDelegate {
             return nil
         }
     }
-    
     func callOpenWeatherMap() {
-        let requestURL = URL(string : self.createRequestURL())
+        let requestURL = URL(string : createRequestURL())
         let task = URLSession.shared.dataTask(with: requestURL!, completionHandler: { data, response, error in
             guard let json = self.parseJson(data!) else {return}
             print(json)
@@ -35,7 +33,6 @@ extension WeatherDelegate {
 
 class Forecaster {
     var delegate : WeatherDelegate?
-    
     func forecast () {
         guard let delegate = delegate else {
             print("There is nothing to forecast today")
