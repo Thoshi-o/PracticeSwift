@@ -7,7 +7,6 @@ import UIKit
 import PlaygroundSupport
 
 protocol WeatherDelegate {
-    func callOpenWeatherMap() -> Void
     func createRequestURL() -> String
     func parseJson(_ data:Data)  -> NSDictionary?
 }
@@ -21,18 +20,33 @@ extension WeatherDelegate {
             return nil
         }
     }
-    func callOpenWeatherMap() {
+    func callOpenWeatherMap(weatherCompletionHandler:@escaping (_ Data : NSDictionary? ,Error?) -> NSDictionary?) {
         let requestURL = URL(string : createRequestURL())
         let task = URLSession.shared.dataTask(with: requestURL!, completionHandler: { data, response, error in
             guard let json = self.parseJson(data!) else {return}
-            print(json)
+            print(type(of:json))
+            weatherCompletionHandler(json,nil)
         })
-        task.resume()
+        task.resume() // notice asynchronus
+    }
+    func convertTime(_ time:String) {
+        
+    }
+}
+
+class TimeConverter {
+    func convertTime (_ time:Any) {
+        let dateFormatter = DateFormatter()
+        dateFormatter.timeZone = NSTimeZone(name: "UTC") as TimeZone?
+        dateFormatter.locale = Locale(identifier: "Asia/Tokyo")
+        dateFormatter.dateFormat = "yyyyMMddHH"
+        dateFormatter.string(from: Date())
     }
 }
 
 class Forecaster {
     var delegate : WeatherDelegate?
+    var test : NSDictionary?
     func forecast () {
         guard let delegate = delegate else {
             print("There is nothing to forecast today")
@@ -40,7 +54,12 @@ class Forecaster {
         }
         
         if type(of: delegate) == ForecastOfCity.self {
-            delegate.callOpenWeatherMap()
+            delegate.callOpenWeatherMap(weatherCompletionHandler:{ data ,error in
+                if let resData = data{
+                    print(resData)
+                }
+                return data;
+            })
         }
         
         // TODO another type of forecast
@@ -61,4 +80,5 @@ let forecaster = Forecaster()
 let city = ForecastOfCity(city : "Tokyo")
 forecaster.delegate = city
 forecaster.forecast()
+
 
